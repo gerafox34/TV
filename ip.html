@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ТВ ПЛЕЕР</title>
+<script>
+// Функция для показа выбранного канала
+function showChannel(channelId) {
+    // Скрываем все видео-блоки
+    var allVideos = document.querySelectorAll('div[id^="channel"]');
+    for (var i = 0; i < allVideos.length; i++) {
+        allVideos[i].style.display = 'none';
+    }
+    
+    // Показываем выбранный канал
+    var selectedChannel = document.getElementById(channelId);
+    if (selectedChannel) {
+        selectedChannel.style.display = 'block';
+    }
+}
+
+// Функция для скрытия всех каналов
+function hideAllChannels() {
+    var allVideos = document.querySelectorAll('div[id^="channel"]');
+    for (var i = 0; i < allVideos.length; i++) {
+        allVideos[i].style.display = 'none';
+    }
+}
+
+// Инициализация при загрузке страницы
+window.onload = function() {
+    // Назначаем обработчики кликов на ссылки каналов
+    document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var channelId = this.getAttribute('href').substring(1);
+            showChannel(channelId);
+        });
+    });
+    
+    // Назначаем обработчики на кнопки "ЗАКРЫТЬ"
+    document.querySelectorAll('a[onclick]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            hideAllChannels();
+        });
+    });
+};
+</script>
+</head>
+<body style="background:black;color:white;">
+
+<h1 style="text-align:center;color:yellow;padding:20px;">ТЕЛЕВИЗОР</h1>
+
+<div style="padding:20px;">
+<h2>Нажмите на канал:</h2>
+<p><a href="#1" style="color:white;font-size:20px;display:block;padding:15px;background:#0066cc;margin:10px;text-decoration:none;">► КАНАЛ 1: ПЕРВЫЙ КАНАЛ</a></p>
+<p><a href="#2" style="color:white;font-size:20px;display:block;padding:15px;background:#0066cc;margin:10px;text-decoration:none;">► КАНАЛ 2: НТВ</a></p>
+<p><a href="#3" style="color:white;font-size:20px;display:block;padding:15px;background:#0066cc;margin:10px;text-decoration:none;">► КАНАЛ 4: ТНТ</a></p>
+<p><a href="#4" style="color:white;font-size:20px;display:block;padding:15px;background:#0066cc;margin:10px;text-decoration:none;">► КАНАЛ 4: СТС</a></p>
+
+<div id="1" style="display:none;margin-top:30px;">
+<video width="100%" height="400" controls autoplay>
+<source src="http://live.ntv.ru/ntv/ngrp:ntv.smil/playlist.m3u8" type="application/x-mpegURL">
+</video>
+<p><a href="#" onclick="hideAllChannels(); return false;" style="color:white;padding:10px;background:red;text-decoration:none;">ЗАКРЫТЬ</a></p>
+</div>
+
+<div id="2" style="display:none;margin-top:30px;">
+<video width="100%" height="400" controls autoplay>
+<source src="https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8" type="application/x-mpegURL">
+</video>
+<p><a href="#" onclick="hideAllChannels(); return false;" style="color:white;padding:10px;background:red;text-decoration:none;">ЗАКРЫТЬ</a></p>
+</div>
+
+<div id="3" style="display:none;margin-top:30px;">
+<video width="100%" height="400" controls autoplay>
+<source src="https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8" type="application/x-mpegURL">
+</video>
+<p><a href="#" onclick="hideAllChannels(); return false;" style="color:white;padding:10px;background:red;text-decoration:none;">ЗАКРЫТЬ</a></p>
+</div>
+
+<div id="4" style="display:none;margin-top:30px;">
+<video width="100%" height="400" controls autoplay>
+<source src="http://serv24.vintera.tv:8081/sts/tracks-v1a1/mono.m3u8?token=test" type="application/x-mpegURL">
+</video>
+<p><a href="#" onclick="hideAllChannels(); return false;" style="color:white;padding:10px;background:red;text-decoration:none;">ЗАКРЫТЬ</a></p>
+</div>
+
+</div>
+
+</body>
+</html>
