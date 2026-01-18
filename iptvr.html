@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ТВ и Радио для Samsung TV</title>
+  <style>
+    /* ОЧЕНЬ ПРОСТЫЕ СТИЛИ ДЛЯ СТАРОГО TIZEN */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      color: #FFFFFF;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+    }
+    
+    /* ШАПКА */
+    .header {
+      background: #333333;
+      padding: 10px;
+      text-align: center;
+      border-bottom: 2px solid #0066CC;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #FFFFFF;
+    }
+    
+    /* НАВИГАЦИЯ */
+    .tabs {
+      display: flex;
+      background: #222222;
+      margin: 5px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: #444444;
+      border: none;
+      color: #CCCCCC;
+      font-size: 14px;
+      border-right: 1px solid #666666;
+    }
+    
+    .tab:last-child {
+      border-right: none;
+    }
+    
+    .tab.active {
+      background: #0066CC;
+      color: #FFFFFF;
+      font-weight: bold;
+    }
+    
+    /* КАНАЛЫ */
+    .channels {
+      padding: 10px;
+    }
+    
+    .channel-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    
+    .channel-item {
+      background: #333333;
+      border: 2px solid #555555;
+      padding: 12px 5px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    
+    .channel-item:active {
+      background: #0066CC;
+      border-color: #FFFFFF;
+    }
+    
+    .channel-item.active {
+      background: #0066CC;
+      border-color: #FFFFFF;
+      font-weight: bold;
+    }
+    
+    /* ПЛЕЕР */
+    .player {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: none;
+      z-index: 1000;
+    }
+    
+    .player.active {
+      display: block;
+    }
+    
+    .player-header {
+      background: #333333;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .player-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #FFFFFF;
+    }
+    
+    .player-close {
+      background: #CC0000;
+      border: none;
+      color: #FFFFFF;
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    
+    .player-video {
+      width: 100%;
+      height: calc(100% - 100px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    video {
+      width: 100%;
+      height: 100%;
+      max-height: 80vh;
+    }
+    
+    .player-controls {
+      background: #333333;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .player-btn {
+      background: #0066CC;
+      border: none;
+      color: #FFFFFF;
+      padding: 8px 15px;
+      margin: 0 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .player-btn:disabled {
+      background: #666666;
+      color: #AAAAAA;
+    }
+    
+    /* РАДИО ПАНЕЛЬ */
+    .radio-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #222222;
+      padding: 10px;
+      border-top: 2px solid #0066CC;
+      display: none;
+    }
+    
+    .radio-panel.active {
+      display: block;
+    }
+    
+    .radio-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .radio-text {
+      font-size: 14px;
+    }
+    
+    .radio-controls {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .radio-btn {
+      background: #0066CC;
+      border: none;
+      color: #FFFFFF;
+      width: 30px;
+      height: 30px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .stop-btn {
+      background: #CC0000;
+    }
+    
+    /* СТАТУС */
+    .status {
+      padding: 10px;
+      text-align: center;
+      color: #AAAAAA;
+      font-size: 12px;
+    }
+    
+    /* АДАПТИВНОСТЬ */
+    @media (min-width: 768px) {
+      .channel-list {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      
+      .channel-item {
+        font-size: 14px;
+        padding: 15px 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<div class="header">
+  <div class="title">📺 ТВ и РАДИО для SAMSUNG TV</div>
+</div>
+
+<!-- НАВИГАЦИЯ -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('tv')">ТВ</button>
+  <button class="tab" onclick="showTab('radio')">РАДИО</button>
+  <button class="tab" onclick="showTab('webcam')">КАМЕРЫ</button>
+</div>
+
+<!-- ТВ КАНАЛЫ -->
+<div id="tvSection" class="channels">
+  <div class="channel-list" id="tvList"></div>
+</div>
+
+<!-- РАДИО -->
+<div id="radioSection" class="channels" style="display:none">
+  <div class="channel-list" id="radioList"></div>
+</div>
+
+<!-- ВЕБ-КАМЕРЫ -->
+<div id="webcamSection" class="channels" style="display:none">
+  <div class="channel-list" id="webcamList"></div>
+</div>
+
+<!-- ПЛЕЕР -->
+<div class="player" id="player">
+  <div class="player-header">
+    <div class="player-title" id="playerTitle">Просмотр</div>
+    <button class="player-close" onclick="closePlayer()">✕</button>
+  </div>
+  <div class="player-video">
+    <video id="videoPlayer" controls></video>
+  </div>
+  <div class="player-controls">
+    <button class="player-btn" onclick="prevChannel()" id="prevBtn">◀ Назад</button>
+    <button class="player-btn" onclick="nextChannel()" id="nextBtn">Вперёд ▶</button>
+  </div>
+</div>
+
+<!-- РАДИО ПАНЕЛЬ -->
+<div class="radio-panel" id="radioPanel">
+  <div class="radio-info">
+    <div class="radio-text">
+      <strong id="radioTitle">Радио</strong>
+      <div id="radioStatus">Выберите станцию</div>
+    </div>
+    <div class="radio-controls">
+      <button class="radio-btn" onclick="toggleRadio()" id="radioToggle">⏸</button>
+      <button class="radio-btn stop-btn" onclick="stopRadio()">⏹</button>
+    </div>
+  </div>
+</div>
+
+<!-- СТАТУС -->
+<div class="status" id="status">
+  Готов к работе. Используйте пульт или мышь.
+</div>
+
+<script>
+  // ===== ДАННЫЕ ДЛЯ TIZEN (МАКСИМАЛЬНО ПРОСТЫЕ) =====
+  
+  // ТВ КАНАЛЫ - только самые надежные
+  const tvChannels = [
+    { name: "НТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_NTV/variant.m3u8" },
+    { name: "СТС", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8" },
+    { name: "ТНТ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT/variant.m3u8" },
+    { name: "РЕН ТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RENTV/variant.m3u8" },
+    { name: "Матч ТВ", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_MATCHTV/variant.m3u8" },
+    { name: "Россия-1", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RUSSIA1/variant.m3u8" },
+    { name: "Первый", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_1TVSD/variant.m3u8" },
+    { name: "ТВ Центр", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TVC/variant.m3u8" },
+    { name: "Мир", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_MIR/variant.m3u8" },
+    { name: "Пятница", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8" }
+  ];
+  
+  // РАДИО - прямые ссылки на MP3/AAC
+  const radioStations = [
+    { name: "Европа Плюс", url: "http://emgregion.hostingradio.ru:8010/europaplus128.mp3" },
+    { name: "Авторадио", url: "http://pub0301.101.ru:8000/stream/air/aac/64/99" },
+    { name: "Русское Радио", url: "http://rusradio.hostingradio.ru/rusradio128.mp3" },
+    { name: "Дорожное", url: "http://dorognoe.hostingradio.ru:8000/radio" },
+    { name: "Вести FM", url: "http://icecast-vgtrk.cdnvideo.ru/vestifm_mp3_192kbps" },
+    { name: "Маяк", url: "http://icecast-vgtrk.cdnvideo.ru/mayakfm_mp3_192kbps" },
+    { name: "Радио России", url: "http://icecast-vgtrk.cdnvideo.ru/radiokp_mp3_192kbps" }
+  ];
+  
+  // ВЕБ-КАМЕРЫ - только HTTP (не HTTPS для старого TV)
+  const webcams = [
+    { name: "Нью-Йорк", url: "http://earthcam-cdn.ec-prod.net/hdtimes10/hdtimes10.stream/playlist.m3u8" },
+    { name: "Москва", url: "http://skcdn.camtime.com/user109355/playlist.m3u8" },
+    { name: "Венеция", url: "http://livestream.5t.ti.ch/camera4.m3u8" },
+    { name: "Берлин", url: "http://livestream.5t.ti.ch/camera2.m3u8" }
+  ];
+  
+  // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+  let currentTab = 'tv';
+  let currentTV = -1;
+  let currentRadio = -1;
+  let currentWebcam = -1;
+  let audioPlayer = null;
+  
+  // ===== ФУНКЦИИ =====
+  
+  // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+  window.onload = function() {
+    loadTVChannels();
+    loadRadioStations();
+    loadWebcams();
+    updateStatus("Готово. Выберите канал.");
+    
+    // Для Tizen TV добавляем обработку клавиш пульта
+    document.onkeydown = handleKeyPress;
+  };
+  
+  // ЗАГРУЗКА ТВ КАНАЛОВ
+  function loadTVChannels() {
+    const tvList = document.getElementById('tvList');
+    tvList.innerHTML = '';
+    
+    tvChannels.forEach((channel, index) => {
+      const div = document.createElement('div');
+      div.className = 'channel-item';
+      div.innerHTML = channel.name;
+      div.onclick = function() {
+        playTV(index);
+      };
+      tvList.appendChild(div);
+    });
+  }
+  
+  // ЗАГРУЗКА РАДИО
+  function loadRadioStations() {
+    const radioList = document.getElementById('radioList');
+    radioList.innerHTML = '';
+    
+    radioStations.forEach((station, index) => {
+      const div = document.createElement('div');
+      div.className = 'channel-item';
+      div.innerHTML = station.name;
+      div.onclick = function() {
+        playRadio(index);
+      };
+      radioList.appendChild(div);
+    });
+  }
+  
+  // ЗАГРУЗКА КАМЕР
+  function loadWebcams() {
+    const webcamList = document.getElementById('webcamList');
+    webcamList.innerHTML = '';
+    
+    webcams.forEach((camera, index) => {
+      const div = document.createElement('div');
+      div.className = 'channel-item';
+      div.innerHTML = camera.name;
+      div.onclick = function() {
+        playWebcam(index);
+      };
+      webcamList.appendChild(div);
+    });
+  }
+  
+  // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+  function showTab(tabName) {
+    // Скрыть все вкладки
+    document.getElementById('tvSection').style.display = 'none';
+    document.getElementById('radioSection').style.display = 'none';
+    document.getElementById('webcamSection').style.display = 'none';
+    
+    // Убрать активный класс со всех кнопок
+    const tabs = document.getElementsByClassName('tab');
+    for (let i = 0; i < tabs.length; i++) {
+      tabs[i].className = 'tab';
+    }
+    
+    // Показать выбранную вкладку
+    document.getElementById(tabName + 'Section').style.display = 'block';
+    
+    // Активная кнопка
+    const activeTab = document.querySelector('.tab[onclick*="' + tabName + '"]');
+    if (activeTab) {
+      activeTab.className = 'tab active';
+    }
+    
+    currentTab = tabName;
+    updateStatus("Вкладка: " + (tabName === 'tv' ? 'Телеканалы' : tabName === 'radio' ? 'Радио' : 'Камеры'));
+  }
+  
+  // ВОСПРОИЗВЕДЕНИЕ ТВ
+  function playTV(index) {
+    // Остановить радио если играет
+    if (audioPlayer) {
+      audioPlayer.pause();
+      document.getElementById('radioPanel').className = 'radio-panel';
+    }
+    
+    // Обновить активный канал
+    updateActiveChannel('tv', index);
+    currentTV = index;
+    currentWebcam = -1;
+    
+    const channel = tvChannels[index];
+    const videoPlayer = document.getElementById('videoPlayer');
+    
+    // Настроить плеер
+    document.getElementById('playerTitle').innerHTML = channel.name;
+    document.getElementById('player').className = 'player active';
+    videoPlayer.src = channel.url;
+    
+    // Включить кнопки навигации
+    document.getElementById('prevBtn').disabled = false;
+    document.getElementById('nextBtn').disabled = false;
+    
+    // Попытка воспроизведения
+    videoPlayer.load();
+    
+    // Для старого Tizen используем простой способ
+    setTimeout(function() {
+      videoPlayer.play().catch(function(error) {
+        updateStatus("Ошибка: " + channel.name + ". Пробую следующий...");
+        setTimeout(function() {
+          nextChannel();
+        }, 2000);
+      });
+    }, 500);
+    
+    updateStatus("Загрузка: " + channel.name);
+  }
+  
+  // ВОСПРОИЗВЕДЕНИЕ РАДИО
+  function playRadio(index) {
+    // Остановить ТВ если открыто
+    closePlayer();
+    
+    // Остановить предыдущее радио
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
+    
+    // Обновить активную станцию
+    updateActiveChannel('radio', index);
+    currentRadio = index;
+    
+    const station = radioStations[index];
+    
+    // Создать или переиспользовать аудио плеер
+    if (!audioPlayer) {
+      audioPlayer = new Audio();
+      audioPlayer.crossOrigin = 'anonymous';
+      
+      // События аудио
+      audioPlayer.onplay = function() {
+        document.getElementById('radioToggle').innerHTML = '⏸';
+        document.getElementById('radioStatus').innerHTML = 'Играет';
+      };
+      
+      audioPlayer.onpause = function() {
+        document.getElementById('radioToggle').innerHTML = '▶';
+        document.getElementById('radioStatus').innerHTML = 'На паузе';
+      };
+      
+      audioPlayer.onerror = function() {
+        document.getElementById('radioStatus').innerHTML = 'Ошибка соединения';
+      };
+    }
+    
+    // Установить источник и воспроизвести
+    audioPlayer.src = station.url;
+    audioPlayer.load();
+    
+    // Показать панель радио
+    document.getElementById('radioPanel').className = 'radio-panel active';
+    document.getElementById('radioTitle').innerHTML = station.name;
+    document.getElementById('radioStatus').innerHTML = 'Загрузка...';
+    
+    // Попытка воспроизведения
+    setTimeout(function() {
+      audioPlayer.play().catch(function(error) {
+        document.getElementById('radioStatus').innerHTML = 'Ошибка воспроизведения';
+      });
+    }, 500);
+    
+    updateStatus("Радио: " + station.name);
+  }
+  
+  // ВОСПРОИЗВЕДЕНИЕ КАМЕРЫ
+  function playWebcam(index) {
+    // Остановить радио если играет
+    if (audioPlayer) {
+      audioPlayer.pause();
+      document.getElementById('radioPanel').className = 'radio-panel';
+    }
+    
+    // Обновить активную камеру
+    updateActiveChannel('webcam', index);
+    currentWebcam = index;
+    currentTV = -1;
+    
+    const camera = webcams[index];
+    const videoPlayer = document.getElementById('videoPlayer');
+    
+    // Настроить плеер
+    document.getElementById('playerTitle').innerHTML = camera.name;
+    document.getElementById('player').className = 'player active';
+    videoPlayer.src = camera.url;
+    
+    // Включить кнопки навигации
+    document.getElementById('prevBtn').disabled = false;
+    document.getElementById('nextBtn').disabled = false;
+    
+    // Попытка воспроизведения
+    videoPlayer.load();
+    
+    setTimeout(function() {
+      videoPlayer.play().catch(function(error) {
+        updateStatus("Ошибка камеры: " + camera.name + ". Пробую следующую...");
+        setTimeout(function() {
+          nextChannel();
+        }, 2000);
+      });
+    }, 500);
+    
+    updateStatus("Камера: " + camera.name);
+  }
+  
+  // ПАУЗА/ПРОДОЛЖЕНИЕ РАДИО
+  function toggleRadio() {
+    if (audioPlayer) {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+      } else {
+        audioPlayer.pause();
+      }
+    }
+  }
+  
+  // ОСТАНОВИТЬ РАДИО
+  function stopRadio() {
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.src = '';
+      document.getElementById('radioPanel').className = 'radio-panel';
+      updateActiveChannel('radio', -1);
+      currentRadio = -1;
+      updateStatus("Радио остановлено");
+    }
+  }
+  
+  // ЗАКРЫТЬ ПЛЕЕР
+  function closePlayer() {
+    const videoPlayer = document.getElementById('videoPlayer');
+    videoPlayer.pause();
+    videoPlayer.src = '';
+    document.getElementById('player').className = 'player';
+    
+    // Сбросить активные каналы
+    updateActiveChannel('tv', -1);
+    updateActiveChannel('webcam', -1);
+    currentTV = -1;
+    currentWebcam = -1;
+    
+    updateStatus("Плеер закрыт");
+  }
+  
+  // ПРЕДЫДУЩИЙ КАНАЛ
+  function prevChannel() {
+    if (currentTab === 'tv' && currentTV >= 0) {
+      let newIndex = currentTV - 1;
+      if (newIndex < 0) newIndex = tvChannels.length - 1;
+      playTV(newIndex);
+    } else if (currentTab === 'radio' && currentRadio >= 0) {
+      let newIndex = currentRadio - 1;
+      if (newIndex < 0) newIndex = radioStations.length - 1;
+      playRadio(newIndex);
+    } else if (currentTab === 'webcam' && currentWebcam >= 0) {
+      let newIndex = currentWebcam - 1;
+      if (newIndex < 0) newIndex = webcams.length - 1;
+      playWebcam(newIndex);
+    }
+  }
+  
+  // СЛЕДУЮЩИЙ КАНАЛ
+  function nextChannel() {
+    if (currentTab === 'tv' && currentTV >= 0) {
+      let newIndex = currentTV + 1;
+      if (newIndex >= tvChannels.length) newIndex = 0;
+      playTV(newIndex);
+    } else if (currentTab === 'radio' && currentRadio >= 0) {
+      let newIndex = currentRadio + 1;
+      if (newIndex >= radioStations.length) newIndex = 0;
+      playRadio(newIndex);
+    } else if (currentTab === 'webcam' && currentWebcam >= 0) {
+      let newIndex = currentWebcam + 1;
+      if (newIndex >= webcams.length) newIndex = 0;
+      playWebcam(newIndex);
+    }
+  }
+  
+  // ОБНОВИТЬ АКТИВНЫЙ КАНАЛ
+  function updateActiveChannel(type, index) {
+    // Убрать активный класс со всех
+    const items = document.querySelectorAll('.' + type + 'Section .channel-item');
+    for (let i = 0; i < items.length; i++) {
+      items[i].className = 'channel-item';
+    }
+    
+    // Добавить активный класс выбранному
+    if (index >= 0 && items[index]) {
+      items[index].className = 'channel-item active';
+    }
+  }
+  
+  // ОБНОВИТЬ СТАТУС
+  function updateStatus(message) {
+    document.getElementById('status').innerHTML = message;
+    console.log("STATUS: " + message);
+  }
+  
+  // ОБРАБОТКА КЛАВИШ ПУЛЬТА
+  function handleKeyPress(event) {
+    const key = event.keyCode || event.which;
+    
+    // ESC - закрыть плеер
+    if (key === 27) { // ESC
+      closePlayer();
+    }
+    
+    // СТРЕЛКИ - навигация
+    if (!document.getElementById('player').className.includes('active')) {
+      // Навигация по вкладкам
+      if (key === 38 || key === 40) { // ВВЕРХ/ВНИЗ
+        event.preventDefault();
+        const tabs = ['tv', 'radio', 'webcam'];
+        let currentIndex = tabs.indexOf(currentTab);
+        
+        if (key === 38) { // ВВЕРХ
+          currentIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+        } else { // ВНИЗ
+          currentIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
+        }
+        
+        showTab(tabs[currentIndex]);
+      }
+      
+      // ВЛЕВО/ВПРАВО - выбор канала
+      if (key === 37 || key === 39) { // ВЛЕВО/ВПРАВО
+        event.preventDefault();
+        // Можно добавить навигацию по каналам в сетке
+      }
+      
+      // ENTER - выбор текущего
+      if (key === 13) { // ENTER
+        // Можно добавить выбор первого канала
+      }
+    } else {
+      // Если открыт плеер
+      if (key === 37) { // ВЛЕВО
+        prevChannel();
+      } else if (key === 39) { // ВПРАВО
+        nextChannel();
+      }
+    }
+  }
+  
+  // ПРОСТАЯ ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ
+  function refresh() {
+    location.reload();
+  }
+</script>
+
+<!-- ПРОСТЫЕ КНОПКИ УПРАВЛЕНИЯ (для теста с мыши) -->
+<div style="position:fixed; bottom:10px; right:10px; z-index:999;">
+  <button onclick="refresh()" style="background:#0066CC; color:white; border:none; padding:5px 10px; margin:2px;">Обновить</button>
+  <button onclick="closePlayer()" style="background:#CC0000; color:white; border:none; padding:5px 10px; margin:2px;">Закрыть</button>
+</div>
+
+</body>
+</html>
